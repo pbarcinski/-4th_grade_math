@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String             @id @default(uuid())
+  username     String             @unique
+  email        String             @unique
+  passwordHash String
+  createdAt    DateTime           @default(now())
+
+  answers      Answer[]
+  sessions     ChallengeSession[]
+
+  @@map("users")
+}
+
+// operation: "MULTIPLY" | "DIVIDE"
+// mode: "LEARN" | "CHALLENGE"
+model Answer {
+  id          String   @id @default(uuid())
+  userId      String
+  operandA    Int
+  operandB    Int
+  operation   String
+  givenAnswer Int
+  isCorrect   Boolean
+  mode        String
+  sessionId   String?
+  answeredAt  DateTime @default(now())
+
+  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session ChallengeSession? @relation(fields: [sessionId], references: [id])
+
+  @@index([userId])
+  @@index([sessionId])
+  @@map("answers")
+}
+
+model ChallengeSession {
+  id           String    @id @default(uuid())
+  userId       String
+  startedAt    DateTime  @default(now())
+  endedAt      DateTime?
+  durationSecs Int       @default(60)
+  score        Int       @default(0)
+  totalAsked   Int       @default(0)
+  completed    Boolean   @default(false)
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers Answer[]
+
+  @@index([userId])
+  @@index([score])
+  @@map("challenge_sessions")
+}
