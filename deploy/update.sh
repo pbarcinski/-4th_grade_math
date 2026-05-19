@@ -19,15 +19,17 @@ echo "▶ Pobieranie zmian z repozytorium..."
 git -C "$APP_DIR" fetch origin
 git -C "$APP_DIR" reset --hard origin/main
 
-echo "▶ Build backendu..."
+echo "▶ Migracje bazy danych..."
 cd "$APP_DIR/backend"
 npm install --silent
-npm run build 2>&1 | tail -3
-
-echo "▶ Migracje bazy danych..."
 source "$APP_DIR/.env" 2>/dev/null || true
 DATABASE_URL="$(grep DATABASE_URL "$APP_DIR/.env" | cut -d= -f2- | tr -d '"')" \
   npx prisma migrate deploy
+DATABASE_URL="$(grep DATABASE_URL "$APP_DIR/.env" | cut -d= -f2- | tr -d '"')" \
+  npx prisma generate
+
+echo "▶ Build backendu..."
+npm run build 2>&1 | tail -3
 
 echo "▶ Build frontendu..."
 cd "$APP_DIR/frontend"
