@@ -1,0 +1,15 @@
+[Unit]
+Description=Matematyka 4 — Node.js Backend
+After=network.target postgresql.service
+
+[Service]
+WorkingDirectory=/opt/math4/backend
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=5
+EnvironmentFile=/opt/math4/.env
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

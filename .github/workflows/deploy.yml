@@ -1,0 +1,23 @@
+name: Deploy to Mikrus
+
+on:
+  push:
+    branches: [main]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  deploy:
+    name: Deploy to Mikrus (pbes.tojest.dev/math4)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: srv65.mikr.us
+          port: 10201
+          username: root
+          key: ${{ secrets.MIKRUS_SSH_KEY }}
+          script: bash /opt/math4/deploy/update.sh
