@@ -47,7 +47,7 @@ export async function getWeakAreas(userId: string) {
     }));
 }
 
-const VALID_AVATARS = ['🦊','🐶','🐱','🦁','🐸','🐧','🦄','🐻','🐯','🐼','🦋','🐙'];
+const VALID_AVATARS = ['🐱','🐶','🦊','🐰','🐹','🦔','🐻','🐼','🐨','🐯','🦁','🐺','🦄','🐸','🐧','🦜','🦩','🦦','🐢','🐙','🦋','🐬','🦈','🐘'];
 
 export async function updateAvatar(userId: string, avatar: string) {
   if (!VALID_AVATARS.includes(avatar)) throw new Error('Nieprawidłowy awatar');
