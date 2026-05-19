@@ -3,8 +3,8 @@ import * as authService from '../services/auth.service';
 
 export async function register(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { username, email, password } = req.body;
-    const result = await authService.register(username, email, password);
+    const { username, email, password, avatar } = req.body;
+    const result = await authService.register(username, email, password, avatar);
     res.status(201).json(result);
   } catch (err) {
     if (err instanceof Error && err.message.includes('zajęt')) {

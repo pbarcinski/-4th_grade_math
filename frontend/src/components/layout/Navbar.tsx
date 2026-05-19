@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { LogOut, Trophy, User, LayoutDashboard } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { DEFAULT_AVATAR } from '@/lib/avatars';
 
 export function Navbar() {
   const { user, logout } = useAuthStore();
@@ -36,10 +37,13 @@ export function Navbar() {
           </Link>
           <Link
             to="/profile"
-            className="p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-700 transition-all"
+            className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all flex items-center justify-center"
             aria-label="Profil"
           >
-            <User size={20} />
+            {user?.avatar
+              ? <span className="text-xl leading-none">{user.avatar}</span>
+              : <User size={20} className="text-gray-500 dark:text-gray-400" />
+            }
           </Link>
           <ThemeToggle />
           {user && (

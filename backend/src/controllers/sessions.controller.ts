@@ -4,7 +4,8 @@ import * as sessionsService from '../services/sessions.service';
 export async function startSession(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const userId = req.user!.userId;
-    const session = await sessionsService.createSession(userId);
+    const durationSecs = Number(req.body.durationSecs) || 60;
+    const session = await sessionsService.createSession(userId, durationSecs);
     res.status(201).json(session);
   } catch (err) {
     next(err);
@@ -27,9 +28,10 @@ export async function finishSession(req: Request, res: Response, next: NextFunct
   }
 }
 
-export async function leaderboard(_req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function leaderboard(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const data = await sessionsService.getLeaderboard();
+    const durationSecs = Number(req.query.duration) || 60;
+    const data = await sessionsService.getLeaderboard(durationSecs);
     res.json({ leaderboard: data });
   } catch (err) {
     next(err);

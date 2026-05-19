@@ -45,7 +45,7 @@ export function ChallengePage() {
     reset();
     endingRef.current = false;
 
-    const session = await sessionsApi.start();
+    const session = await sessionsApi.start(dur);
     const sid = session.id;
     startSession(sid, dur);
     await fetchNext(sid);

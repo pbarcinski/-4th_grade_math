@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { prisma } from '../lib/prisma';
 import { signToken } from '../lib/jwt';
 
-export async function register(username: string, email: string, password: string) {
+export async function register(username: string, email: string, password: string, avatar?: string) {
   const existing = await prisma.user.findFirst({
     where: { OR: [{ email }, { username }] },
   });
@@ -11,8 +11,8 @@ export async function register(username: string, email: string, password: string
   }
   const passwordHash = await bcrypt.hash(password, 12);
   const user = await prisma.user.create({
-    data: { username, email, passwordHash },
-    select: { id: true, username: true, email: true },
+    data: { username, email, passwordHash, ...(avatar ? { avatar } : {}) },
+    select: { id: true, username: true, email: true, avatar: true },
   });
   const token = signToken({ userId: user.id, username: user.username });
   return { token, user };
@@ -24,5 +24,5 @@ export async function login(email: string, password: string) {
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) throw new Error('Nieprawidłowy email lub hasło');
   const token = signToken({ userId: user.id, username: user.username });
-  return { token, user: { id: user.id, username: user.username, email: user.email } };
+  return { token, user: { id: user.id, username: user.username, email: user.email, avatar: user.avatar } };
 }

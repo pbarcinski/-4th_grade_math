@@ -5,6 +5,8 @@ import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
+import { AvatarPicker } from '@/components/ui/AvatarPicker';
+import { DEFAULT_AVATAR } from '@/lib/avatars';
 
 interface Props {
   onSuccess: () => void;
@@ -15,6 +17,7 @@ export function RegisterForm({ onSuccess }: Props) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [avatar, setAvatar] = useState(DEFAULT_AVATAR);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -23,7 +26,7 @@ export function RegisterForm({ onSuccess }: Props) {
     setError('');
     setLoading(true);
     try {
-      const { user, token } = await authApi.register(username, email, password);
+      const { user, token } = await authApi.register(username, email, password, avatar);
       login(user, token);
       onSuccess();
     } catch (err: unknown) {
@@ -74,6 +77,7 @@ export function RegisterForm({ onSuccess }: Props) {
           minLength={6}
           autoComplete="new-password"
         />
+        <AvatarPicker value={avatar} onChange={setAvatar} />
         {error && (
           <div className="text-sm text-red-600 dark:text-red-400 text-center animate-fade-in">
             {error}

@@ -1,8 +1,8 @@
 import { prisma } from '../lib/prisma';
 
-export async function createSession(userId: string) {
+export async function createSession(userId: string, durationSecs: number = 60) {
   const session = await prisma.challengeSession.create({
-    data: { userId },
+    data: { userId, durationSecs },
     select: { id: true },
   });
   return session;
@@ -26,9 +26,9 @@ export async function endSession(
   });
 }
 
-export async function getLeaderboard() {
+export async function getLeaderboard(durationSecs: number = 60) {
   const rows = await prisma.challengeSession.findMany({
-    where: { completed: true },
+    where: { completed: true, durationSecs },
     orderBy: { score: 'desc' },
     take: 10,
     select: {

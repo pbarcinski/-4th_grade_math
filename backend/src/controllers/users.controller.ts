@@ -19,6 +19,20 @@ export async function getStats(req: Request, res: Response, next: NextFunction):
   }
 }
 
+export async function updateAvatar(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { avatar } = req.body;
+    const user = await usersService.updateAvatar(req.user!.userId, avatar);
+    res.json(user);
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('awatar')) {
+      res.status(400).json({ error: err.message });
+    } else {
+      next(err);
+    }
+  }
+}
+
 export async function getSessions(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const page = parseInt((req.query.page as string) ?? '1', 10);
