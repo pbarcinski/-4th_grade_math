@@ -2,7 +2,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { LogOut, Trophy, User, LayoutDashboard } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { DEFAULT_AVATAR } from '@/lib/avatars';
 
 export function Navbar() {
   const { user, logout } = useAuthStore();
