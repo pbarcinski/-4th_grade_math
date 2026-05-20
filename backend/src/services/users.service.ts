@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma';
 export async function getProfile(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, username: true, email: true, avatar: true, createdAt: true },
+    select: { id: true, username: true, email: true, avatar: true, role: true, confirmed: true, createdAt: true },
   });
   if (!user) throw new Error('Użytkownik nie istnieje');
 
@@ -54,7 +54,7 @@ export async function updateAvatar(userId: string, avatar: string) {
   return prisma.user.update({
     where: { id: userId },
     data: { avatar },
-    select: { id: true, username: true, email: true, avatar: true },
+    select: { id: true, username: true, email: true, avatar: true, role: true, confirmed: true },
   });
 }
 

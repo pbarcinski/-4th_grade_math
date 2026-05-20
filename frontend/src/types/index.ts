@@ -1,11 +1,15 @@
 export type Operation = 'MULTIPLY' | 'DIVIDE';
 export type Mode = 'LEARN' | 'CHALLENGE';
 
+export type UserRole = 'USER' | 'ADMIN';
+
 export interface User {
   id: string;
   username: string;
   email: string;
   avatar?: string;
+  role?: UserRole;
+  confirmed?: boolean;
   createdAt?: string;
   stats?: {
     totalAnswered: number;

@@ -7,6 +7,7 @@ import { SessionHistory } from '@/components/profile/SessionHistory';
 import { WeakAreasList } from '@/components/results/WeakAreasList';
 import { Spinner } from '@/components/ui/Spinner';
 import { AvatarPicker } from '@/components/ui/AvatarPicker';
+import { AdminPanel } from '@/components/admin/AdminPanel';
 import { DEFAULT_AVATAR } from '@/lib/avatars';
 import { Target, CheckCircle, Trophy, BookOpen, Pencil, X, Check } from 'lucide-react';
 
@@ -112,6 +113,12 @@ export function ProfilePage() {
         <h2 className="font-semibold text-lg mb-3 text-gray-700 dark:text-gray-300">Historia</h2>
         <SessionHistory sessions={sessions?.sessions ?? []} />
       </div>
+
+      {authUser?.role === 'ADMIN' && (
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+          <AdminPanel />
+        </div>
+      )}
     </div>
   );
 }
