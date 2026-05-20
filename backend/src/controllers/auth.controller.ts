@@ -23,6 +23,8 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
   } catch (err) {
     if (err instanceof Error && err.message.includes('Nieprawidłowy')) {
       res.status(401).json({ error: err.message });
+    } else if (err instanceof Error && err.message.includes('zatwierdzeni')) {
+      res.status(403).json({ error: err.message });
     } else {
       next(err);
     }
