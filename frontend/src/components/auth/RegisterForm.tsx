@@ -20,14 +20,19 @@ export function RegisterForm({ onSuccess }: Props) {
   const [avatar, setAvatar] = useState(DEFAULT_AVATAR);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pendingConfirmation, setPendingConfirmation] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const { user, token } = await authApi.register(username, email, password, avatar);
-      login(user, token);
+      const result = await authApi.register(username, email, password, avatar);
+      if ('pendingConfirmation' in result) {
+        setPendingConfirmation(true);
+        return;
+      }
+      login(result.user, result.token);
       onSuccess();
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
@@ -36,6 +41,22 @@ export function RegisterForm({ onSuccess }: Props) {
       setLoading(false);
     }
   };
+
+  if (pendingConfirmation) {
+    return (
+      <Card className="p-8 w-full max-w-md mx-auto text-center flex flex-col items-center gap-4">
+        <div className="text-5xl">⏳</div>
+        <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-gray-100">Konto utworzone!</h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Twoje konto czeka na zatwierdzenie przez administratora.<br />
+          Po zatwierdzeniu będziesz mógł się zalogować.
+        </p>
+        <Link to="/login" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline text-sm">
+          Wróć do logowania
+        </Link>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-8 w-full max-w-md mx-auto">

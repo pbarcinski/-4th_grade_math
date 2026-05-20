@@ -6,9 +6,13 @@ export interface AuthResponse {
   user: User;
 }
 
+export interface PendingConfirmationResponse {
+  pendingConfirmation: true;
+}
+
 export const authApi = {
   register: (username: string, email: string, password: string, avatar?: string) =>
-    apiClient.post<AuthResponse>('/auth/register', { username, email, password, avatar }).then(r => r.data),
+    apiClient.post<AuthResponse | PendingConfirmationResponse>('/auth/register', { username, email, password, avatar }).then(r => r.data),
 
   login: (email: string, password: string) =>
     apiClient.post<AuthResponse>('/auth/login', { email, password }).then(r => r.data),

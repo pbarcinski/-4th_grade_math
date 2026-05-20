@@ -24,6 +24,9 @@ export async function register(username: string, email: string, password: string
     },
     select: { id: true, username: true, email: true, avatar: true, role: true, confirmed: true },
   });
+  if (!user.confirmed) {
+    return { pendingConfirmation: true as const };
+  }
   const token = signToken({ userId: user.id, username: user.username, role: user.role });
   return { token, user };
 }
