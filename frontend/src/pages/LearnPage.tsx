@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { questionsApi } from '@/api/questions.api';
-import { Question, AnswerResult } from '@/types';
+import { Question, AnswerResult, Category } from '@/types';
 import { FlashCard } from '@/components/learn/FlashCard';
 import { AnswerInput } from '@/components/learn/AnswerInput';
 import { ClickChoices } from '@/components/learn/ClickChoices';
@@ -17,6 +17,9 @@ type AnswerMode = 'type' | 'click';
 
 export function LearnPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const category = (searchParams.get('category') ?? 'MULTIPLICATION') as Category;
+
   const [phase, setPhase] = useState<Phase>('loading');
   const [question, setQuestion] = useState<Question | null>(null);
   const [result, setResult] = useState<AnswerResult | null>(null);
@@ -27,12 +30,12 @@ export function LearnPage() {
 
   const loadNext = useCallback(async () => {
     setPhase('loading');
-    const q = await questionsApi.next('LEARN');
+    const q = await questionsApi.next('LEARN', undefined, category);
     setQuestion(q);
     setAnimKey(k => k + 1);
     setResetKey(k => k + 1);
     setPhase('question');
-  }, []);
+  }, [category]);
 
   useEffect(() => { loadNext(); }, [loadNext]);
 
@@ -46,11 +49,15 @@ export function LearnPage() {
       givenAnswer: value,
       mode: 'LEARN',
       sessionId: null,
+      category,
+      conversionKey: question.conversionKey,
     });
     setResult(r);
     setPhase('feedback');
     setSubmitting(false);
   };
+
+  const categoryLabel = category === 'UNIT_CONVERSION' ? 'Zamiana miar' : 'Tryb Nauki';
 
   return (
     <div className="flex flex-col gap-6 max-w-lg mx-auto">
@@ -58,7 +65,7 @@ export function LearnPage() {
         <button onClick={() => navigate('/')} className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all">
           <ArrowLeft size={20} />
         </button>
-        <h1 className="font-display text-2xl font-black text-gray-900 dark:text-gray-100">Tryb Nauki</h1>
+        <h1 className="font-display text-2xl font-black text-gray-900 dark:text-gray-100">{categoryLabel}</h1>
       </div>
 
       {phase === 'loading' && (
@@ -103,7 +110,7 @@ export function LearnPage() {
 
           {phase === 'feedback' && result && (
             <div className="flex flex-col gap-4">
-              <FeedbackBanner result={result} operation={question.operation} operandA={question.operandA} />
+              <FeedbackBanner result={result} operation={question.operation} operandA={question.operandA} question={question} />
               <Button onClick={loadNext} size="lg" className="w-full">
                 Następne pytanie →
               </Button>

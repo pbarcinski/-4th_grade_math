@@ -23,19 +23,22 @@ model User {
   @@map("users")
 }
 
-// operation: "MULTIPLY" | "DIVIDE"
+// operation: "MULTIPLY" | "DIVIDE" | "CONVERT"
 // mode: "LEARN" | "CHALLENGE"
+// category: "MULTIPLICATION" | "UNIT_CONVERSION"
 model Answer {
-  id          String   @id @default(uuid())
-  userId      String
-  operandA    Int
-  operandB    Int
-  operation   String
-  givenAnswer Int
-  isCorrect   Boolean
-  mode        String
-  sessionId   String?
-  answeredAt  DateTime @default(now())
+  id            String   @id @default(uuid())
+  userId        String
+  operandA      Int
+  operandB      Int
+  operation     String
+  givenAnswer   Int
+  isCorrect     Boolean
+  mode          String
+  sessionId     String?
+  answeredAt    DateTime @default(now())
+  category      String   @default("MULTIPLICATION")
+  conversionKey String?
 
   user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   session ChallengeSession? @relation(fields: [sessionId], references: [id])
@@ -54,6 +57,7 @@ model ChallengeSession {
   score        Int       @default(0)
   totalAsked   Int       @default(0)
   completed    Boolean   @default(false)
+  category     String    @default("MULTIPLICATION")
 
   user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   answers Answer[]

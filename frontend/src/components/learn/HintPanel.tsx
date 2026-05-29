@@ -9,6 +9,55 @@ interface Props {
 export function HintPanel({ question }: Props) {
   const [open, setOpen] = useState(false);
 
+  if (question.operation === 'CONVERT') {
+    const { fromUnit, toUnit, conversionFactor, operandA } = question;
+    if (!fromUnit || !toUnit || !conversionFactor) return null;
+
+    // Build a small conversion table (5 example values)
+    const isMultiply = operandA <= conversionFactor;
+    const exampleValues = [1, 2, 3, 5, 10];
+
+    return (
+      <div className="w-full">
+        <button
+          onClick={() => setOpen(o => !o)}
+          className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+          type="button"
+        >
+          <Lightbulb size={16} />
+          {open ? 'Ukryj wskazówkę' : 'Pokaż wskazówkę'}
+        </button>
+
+        {open && (
+          <div className="mt-3 animate-fade-in bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-4 border border-blue-100 dark:border-blue-800">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium">
+              Zamiana {fromUnit} → {toUnit} (1 {toUnit} = {conversionFactor} {fromUnit}):
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {exampleValues.map(v => {
+                const src = isMultiply ? v : v * conversionFactor;
+                const dst = isMultiply ? v * conversionFactor : v;
+                const isHighlight = src === operandA;
+                return (
+                  <span
+                    key={v}
+                    className={`px-2 py-1 rounded-lg text-sm font-mono ${
+                      isHighlight
+                        ? 'bg-blue-600 text-white font-bold'
+                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600'
+                    }`}
+                  >
+                    {src} {fromUnit} = {dst} {toUnit}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   const table =
     question.operation === 'MULTIPLY'
       ? Array.from({ length: 10 }, (_, i) => ({ factor: i + 1, result: question.operandA * (i + 1) }))

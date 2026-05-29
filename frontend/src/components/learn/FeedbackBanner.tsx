@@ -1,13 +1,14 @@
 import { CheckCircle, XCircle } from 'lucide-react';
-import { AnswerResult } from '@/types';
+import { AnswerResult, Question } from '@/types';
 
 interface Props {
   result: AnswerResult;
   operation: string;
   operandA: number;
+  question?: Question;
 }
 
-export function FeedbackBanner({ result, operation, operandA }: Props) {
+export function FeedbackBanner({ result, operation, operandA, question }: Props) {
   if (result.isCorrect) {
     return (
       <div className="animate-bounce-in flex items-center gap-3 px-6 py-4 rounded-2xl bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">
@@ -17,6 +18,8 @@ export function FeedbackBanner({ result, operation, operandA }: Props) {
     );
   }
 
+  const convHint = result.conversionHint;
+
   return (
     <div className="animate-bounce-in flex flex-col gap-2 px-6 py-4 rounded-2xl bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">
       <div className="flex items-center gap-3">
@@ -25,7 +28,14 @@ export function FeedbackBanner({ result, operation, operandA }: Props) {
           Źle. Poprawna odpowiedź: <span className="text-red-900 dark:text-red-100">{result.correctAnswer}</span>
         </span>
       </div>
-      {result.hint && (
+      {convHint && (
+        <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+          <span className="font-semibold">
+            Zapamiętaj: 1 {convHint.toUnit} = {convHint.factor} {convHint.fromUnit}
+          </span>
+        </div>
+      )}
+      {result.hint && !convHint && (
         <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
           <span className="font-semibold">Tabliczka {operation === 'MULTIPLY' ? '×' : '÷'} {operandA}:</span>{' '}
           {result.hint.map((v, i) => (

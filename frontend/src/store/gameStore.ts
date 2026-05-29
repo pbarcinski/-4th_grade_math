@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Question } from '../types';
+import { Question, Category } from '../types';
 
 interface AnswerRecord {
   question: Question;
@@ -8,12 +8,13 @@ interface AnswerRecord {
 
 interface GameState {
   sessionId: string | null;
+  category: Category;
   score: number;
   totalAsked: number;
   timeLeft: number;
   currentQuestion: Question | null;
   answers: AnswerRecord[];
-  startSession: (sessionId: string, durationSecs?: number) => void;
+  startSession: (sessionId: string, durationSecs?: number, category?: Category) => void;
   setQuestion: (q: Question) => void;
   recordAnswer: (question: Question, isCorrect: boolean) => void;
   tick: () => void;
@@ -22,14 +23,15 @@ interface GameState {
 
 export const useGameStore = create<GameState>((set) => ({
   sessionId: null,
+  category: 'MULTIPLICATION',
   score: 0,
   totalAsked: 0,
   timeLeft: 60,
   currentQuestion: null,
   answers: [],
 
-  startSession: (sessionId, durationSecs = 60) =>
-    set({ sessionId, timeLeft: durationSecs, score: 0, totalAsked: 0, answers: [] }),
+  startSession: (sessionId, durationSecs = 60, category = 'MULTIPLICATION') =>
+    set({ sessionId, category, timeLeft: durationSecs, score: 0, totalAsked: 0, answers: [] }),
 
   setQuestion: (q) => set({ currentQuestion: q }),
 
@@ -43,5 +45,5 @@ export const useGameStore = create<GameState>((set) => ({
   tick: () => set((s) => ({ timeLeft: Math.max(0, s.timeLeft - 1) })),
 
   reset: () =>
-    set({ sessionId: null, score: 0, totalAsked: 0, timeLeft: 60, currentQuestion: null, answers: [] }),
+    set({ sessionId: null, category: 'MULTIPLICATION', score: 0, totalAsked: 0, timeLeft: 60, currentQuestion: null, answers: [] }),
 }));

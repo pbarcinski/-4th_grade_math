@@ -12,7 +12,8 @@ export async function getMe(req: Request, res: Response, next: NextFunction): Pr
 
 export async function getStats(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const weakAreas = await usersService.getWeakAreas(req.user!.userId);
+    const category = (req.query.category as 'MULTIPLICATION' | 'UNIT_CONVERSION') || 'MULTIPLICATION';
+    const weakAreas = await usersService.getWeakAreas(req.user!.userId, category);
     res.json({ weakAreas });
   } catch (err) {
     next(err);

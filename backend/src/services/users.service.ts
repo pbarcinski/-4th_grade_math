@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma';
+import { getWeakAreas as getWeakAreasForCategory, type Category } from './questions.service';
 
 export async function getProfile(userId: string) {
   const user = await prisma.user.findUnique({
@@ -28,23 +29,8 @@ export async function getProfile(userId: string) {
   };
 }
 
-export async function getWeakAreas(userId: string) {
-  const groups = await prisma.answer.groupBy({
-    by: ['operandA', 'operandB', 'operation'],
-    where: { userId, isCorrect: false },
-    _count: { id: true },
-    orderBy: { _count: { id: 'desc' } },
-    take: 10,
-  });
-
-  return groups
-    .filter((g) => g._count.id >= 2)
-    .map((g) => ({
-      operandA: g.operandA,
-      operandB: g.operandB,
-      operation: g.operation,
-      wrongCount: g._count.id,
-    }));
+export async function getWeakAreas(userId: string, category: Category = 'MULTIPLICATION') {
+  return getWeakAreasForCategory(userId, category);
 }
 
 const VALID_AVATARS = ['🐱','🐶','🦊','🐰','🐹','🦔','🐻','🐼','🐨','🐯','🦁','🐺','🦄','🐸','🐧','🦜','🦩','🦦','🐢','🐙','🦋','🐬','🦈','🐘'];

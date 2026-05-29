@@ -1,5 +1,6 @@
-export type Operation = 'MULTIPLY' | 'DIVIDE';
+export type Operation = 'MULTIPLY' | 'DIVIDE' | 'CONVERT';
 export type Mode = 'LEARN' | 'CHALLENGE';
+export type Category = 'MULTIPLICATION' | 'UNIT_CONVERSION';
 
 export type UserRole = 'USER' | 'ADMIN';
 
@@ -24,12 +25,19 @@ export interface Question {
   operandB: number;
   operation: Operation;
   display: string;
+  // tylko dla CONVERT:
+  conversionKey?: string;
+  fromUnit?: string;
+  toUnit?: string;
+  conversionFactor?: number;
+  conversionMultiply?: boolean;
 }
 
 export interface AnswerResult {
   isCorrect: boolean;
   correctAnswer: number;
   hint: number[] | null;
+  conversionHint?: { factor: number; fromUnit: string; toUnit: string; multiply: boolean };
 }
 
 export interface Session {
@@ -52,4 +60,6 @@ export interface WeakArea {
   operandB: number;
   operation: Operation;
   wrongCount: number;
+  conversionKey?: string;
+  conversionLabel?: string;
 }

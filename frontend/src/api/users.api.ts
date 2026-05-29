@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { User, WeakArea, Session } from '../types';
+import { User, WeakArea, Session, Category } from '../types';
 
 export const usersApi = {
   me: () => apiClient.get<User>('/users/me').then(r => r.data),
@@ -7,8 +7,10 @@ export const usersApi = {
   updateAvatar: (avatar: string) =>
     apiClient.patch<User>('/users/me/avatar', { avatar }).then(r => r.data),
 
-  stats: () =>
-    apiClient.get<{ weakAreas: WeakArea[] }>('/users/me/stats').then(r => r.data),
+  stats: (category?: Category) =>
+    apiClient
+      .get<{ weakAreas: WeakArea[] }>('/users/me/stats', { params: category ? { category } : {} })
+      .then(r => r.data),
 
   sessions: (page = 1, limit = 10) =>
     apiClient

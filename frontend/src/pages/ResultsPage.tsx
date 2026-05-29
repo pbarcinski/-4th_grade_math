@@ -8,11 +8,11 @@ import { Button } from '@/components/ui/Button';
 
 export function ResultsPage() {
   const navigate = useNavigate();
-  const { score, totalAsked } = useGameStore();
+  const { score, totalAsked, category } = useGameStore();
 
   const { data: stats } = useQuery({
-    queryKey: ['user-stats'],
-    queryFn: () => usersApi.stats(),
+    queryKey: ['user-stats', category],
+    queryFn: () => usersApi.stats(category),
   });
 
   return (
@@ -28,7 +28,7 @@ export function ResultsPage() {
       )}
 
       <div className="flex flex-col sm:flex-row gap-3">
-        <Button onClick={() => navigate('/challenge')} size="lg" className="flex-1">
+        <Button onClick={() => navigate(`/challenge?category=${category}`)} size="lg" className="flex-1">
           Zagraj jeszcze raz
         </Button>
         <Button onClick={() => navigate('/')} variant="secondary" size="lg" className="flex-1">

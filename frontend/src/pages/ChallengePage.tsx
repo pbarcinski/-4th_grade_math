@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { questionsApi } from '@/api/questions.api';
 import { sessionsApi } from '@/api/sessions.api';
 import { useGameStore } from '@/store/gameStore';
-import { Question } from '@/types';
+import { Question, Category } from '@/types';
 import { CountdownTimer } from '@/components/challenge/CountdownTimer';
 import { ScoreBadge } from '@/components/challenge/ScoreBadge';
 import { ChallengeQuestion } from '@/components/challenge/ChallengeQuestion';
@@ -14,6 +14,9 @@ type Phase = 'setup' | 'loading' | 'playing';
 
 export function ChallengePage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const category = (searchParams.get('category') ?? 'MULTIPLICATION') as Category;
+
   const { startSession, setQuestion, recordAnswer, tick, reset } = useGameStore();
   const [question, setLocalQuestion] = useState<Question | null>(null);
   const [resetKey, setResetKey] = useState(0);
@@ -24,11 +27,11 @@ export function ChallengePage() {
   const endingRef = useRef(false);
 
   const fetchNext = useCallback(async (sid: string) => {
-    const q = await questionsApi.next('CHALLENGE', sid);
+    const q = await questionsApi.next('CHALLENGE', sid, category);
     setLocalQuestion(q);
     setQuestion(q);
     setResetKey(k => k + 1);
-  }, [setQuestion]);
+  }, [setQuestion, category]);
 
   const endChallenge = useCallback(async (sid: string, finalScore: number, finalTotal: number) => {
     if (endingRef.current) return;
@@ -45,14 +48,14 @@ export function ChallengePage() {
     reset();
     endingRef.current = false;
 
-    const session = await sessionsApi.start(dur);
+    const session = await sessionsApi.start(dur, category);
     const sid = session.id;
-    startSession(sid, dur);
+    startSession(sid, dur, category);
     await fetchNext(sid);
     setPhase('playing');
 
     timerRef.current = setInterval(() => { tick(); }, 1000);
-  }, [reset, startSession, fetchNext, tick]);
+  }, [reset, startSession, fetchNext, tick, category]);
 
   useEffect(() => {
     reset();
@@ -79,6 +82,8 @@ export function ChallengePage() {
       givenAnswer: value,
       mode: 'CHALLENGE',
       sessionId: storeSessionId,
+      category,
+      conversionKey: question.conversionKey,
     });
     recordAnswer(question, result.isCorrect);
     await fetchNext(storeSessionId);

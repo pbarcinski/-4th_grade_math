@@ -1,8 +1,10 @@
 import { prisma } from '../lib/prisma';
 
-export async function createSession(userId: string, durationSecs: number = 60) {
+type Category = 'MULTIPLICATION' | 'UNIT_CONVERSION';
+
+export async function createSession(userId: string, durationSecs: number = 60, category: Category = 'MULTIPLICATION') {
   const session = await prisma.challengeSession.create({
-    data: { userId, durationSecs },
+    data: { userId, durationSecs, category },
     select: { id: true },
   });
   return session;
@@ -26,9 +28,9 @@ export async function endSession(
   });
 }
 
-export async function getLeaderboard(durationSecs: number = 60) {
+export async function getLeaderboard(durationSecs: number = 60, category: Category = 'MULTIPLICATION') {
   const rows = await prisma.challengeSession.findMany({
-    where: { completed: true, durationSecs },
+    where: { completed: true, durationSecs, category },
     orderBy: { score: 'desc' },
     take: 10,
     select: {
@@ -46,9 +48,9 @@ export async function getLeaderboard(durationSecs: number = 60) {
   }));
 }
 
-export async function getPersonalBest(userId: string) {
+export async function getPersonalBest(userId: string, category: Category = 'MULTIPLICATION') {
   return prisma.challengeSession.findFirst({
-    where: { userId, completed: true },
+    where: { userId, completed: true, category },
     orderBy: { score: 'desc' },
     select: { score: true, totalAsked: true, startedAt: true },
   });

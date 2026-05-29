@@ -23,7 +23,9 @@ export function WeakAreasList({ weakAreas }: Props) {
             key={i}
             className="px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 font-mono text-sm font-bold"
           >
-            {w.operandA} {opSymbol(w.operation)} {w.operandB}
+            {w.operation === 'CONVERT'
+              ? (w.conversionLabel ?? w.conversionKey ?? '?')
+              : `${w.operandA} ${opSymbol(w.operation)} ${w.operandB}`}
           </span>
         ))}
       </div>

@@ -6,22 +6,29 @@ import { LeaderboardTable } from '@/components/leaderboard/LeaderboardTable';
 import { Spinner } from '@/components/ui/Spinner';
 import { Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { Category } from '@/types';
 
-const CATEGORIES = [
+const DURATIONS = [
   { label: 'Sprint', duration: 60, sub: '60 s' },
   { label: 'Średni', duration: 180, sub: '3 min' },
   { label: 'Maraton', duration: 500, sub: '~8 min' },
 ] as const;
 
-type Duration = typeof CATEGORIES[number]['duration'];
+const CAT_TABS: { key: Category; label: string }[] = [
+  { key: 'MULTIPLICATION', label: 'Tabliczka' },
+  { key: 'UNIT_CONVERSION', label: 'Zamiana miar' },
+];
+
+type Duration = typeof DURATIONS[number]['duration'];
 
 export function LeaderboardPage() {
   const user = useAuthStore(s => s.user);
-  const [active, setActive] = useState<Duration>(60);
+  const [activeDuration, setActiveDuration] = useState<Duration>(60);
+  const [activeCategory, setActiveCategory] = useState<Category>('MULTIPLICATION');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['leaderboard', active],
-    queryFn: () => sessionsApi.leaderboard(active),
+    queryKey: ['leaderboard', activeDuration, activeCategory],
+    queryFn: () => sessionsApi.leaderboard(activeDuration, activeCategory),
     staleTime: 30_000,
   });
 
@@ -33,19 +40,36 @@ export function LeaderboardPage() {
       </div>
 
       <div className="flex rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 self-start">
-        {CATEGORIES.map(c => (
+        {CAT_TABS.map(c => (
+          <button
+            key={c.key}
+            onClick={() => setActiveCategory(c.key)}
+            className={cn(
+              'px-5 py-2.5 text-sm font-bold transition-all',
+              activeCategory === c.key
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800',
+            )}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 self-start">
+        {DURATIONS.map(c => (
           <button
             key={c.duration}
-            onClick={() => setActive(c.duration)}
+            onClick={() => setActiveDuration(c.duration)}
             className={cn(
               'flex flex-col items-center px-5 py-2.5 transition-all',
-              active === c.duration
+              activeDuration === c.duration
                 ? 'bg-blue-600 text-white'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800',
             )}
           >
             <span className="text-sm font-bold">{c.label}</span>
-            <span className={cn('text-xs', active === c.duration ? 'text-blue-200' : 'text-gray-400 dark:text-gray-500')}>
+            <span className={cn('text-xs', activeDuration === c.duration ? 'text-blue-200' : 'text-gray-400 dark:text-gray-500')}>
               {c.sub}
             </span>
           </button>

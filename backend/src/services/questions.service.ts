@@ -1,7 +1,13 @@
 import { prisma } from '../lib/prisma';
+import {
+  generateConversionQuestion,
+  checkConversionAnswer,
+  getConversionByKey,
+} from './conversions.service';
 
 type Operation = 'MULTIPLY' | 'DIVIDE';
 type Mode = 'LEARN' | 'CHALLENGE';
+export type Category = 'MULTIPLICATION' | 'UNIT_CONVERSION';
 
 const ALL_PAIRS: [number, number][] = [];
 for (let a = 2; a <= 10; a++) {
@@ -10,7 +16,7 @@ for (let a = 2; a <= 10; a++) {
   }
 }
 
-interface Question {
+interface MultiplyQuestion {
   operandA: number;
   operandB: number;
   operation: Operation;
@@ -28,14 +34,14 @@ function pickWeighted(pairs: [number, number][], weakSet: Set<string>): [number,
 async function getWeakSet(userId: string): Promise<Set<string>> {
   const groups = await prisma.answer.groupBy({
     by: ['operandA', 'operandB'],
-    where: { userId, isCorrect: false },
+    where: { userId, isCorrect: false, category: 'MULTIPLICATION' },
     _count: { id: true },
     having: { id: { _count: { gte: 2 } } },
   });
   return new Set(groups.map((g) => `${g.operandA}x${g.operandB}`));
 }
 
-export async function generateQuestion(userId: string, _mode: Mode): Promise<Question> {
+async function generateMultiplyQuestion(userId: string, _mode: Mode): Promise<MultiplyQuestion> {
   const weakSet = await getWeakSet(userId);
 
   const useMultiply = Math.random() < 0.6;
@@ -52,6 +58,13 @@ export async function generateQuestion(userId: string, _mode: Mode): Promise<Que
   }
 }
 
+export async function generateQuestion(userId: string, mode: Mode, category: Category = 'MULTIPLICATION') {
+  if (category === 'UNIT_CONVERSION') {
+    return generateConversionQuestion(userId);
+  }
+  return generateMultiplyQuestion(userId, mode);
+}
+
 function buildHint(operation: Operation, operandA: number, operandB: number): number[] {
   if (operation === 'MULTIPLY') {
     return Array.from({ length: 10 }, (_, i) => operandA * (i + 1));
@@ -64,13 +77,20 @@ export async function checkAnswer(
   userId: string,
   operandA: number,
   operandB: number,
-  operation: Operation,
+  operation: string,
   givenAnswer: number,
   mode: Mode,
   sessionId: string | null,
+  category: Category = 'MULTIPLICATION',
+  conversionKey?: string,
 ) {
+  if (category === 'UNIT_CONVERSION' && conversionKey) {
+    return checkConversionAnswer(userId, conversionKey, operandA, givenAnswer, mode, sessionId);
+  }
+
+  const op = operation as Operation;
   const correctAnswer =
-    operation === 'MULTIPLY' ? operandA * operandB : Math.round(operandA / operandB);
+    op === 'MULTIPLY' ? operandA * operandB : Math.round(operandA / operandB);
   const isCorrect = givenAnswer === correctAnswer;
 
   await prisma.answer.create({
@@ -78,14 +98,52 @@ export async function checkAnswer(
       userId,
       operandA,
       operandB,
-      operation,
+      operation: op,
       givenAnswer,
       isCorrect,
       mode,
       sessionId: sessionId ?? undefined,
+      category: 'MULTIPLICATION',
     },
   });
 
-  const hint = !isCorrect ? buildHint(operation, operandA, operandB) : null;
+  const hint = !isCorrect ? buildHint(op, operandA, operandB) : null;
   return { isCorrect, correctAnswer, hint };
+}
+
+export async function getWeakAreas(userId: string, category: Category = 'MULTIPLICATION') {
+  if (category === 'UNIT_CONVERSION') {
+    const groups = await prisma.answer.groupBy({
+      by: ['conversionKey'],
+      where: { userId, isCorrect: false, category: 'UNIT_CONVERSION' },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 10,
+    });
+    return groups
+      .filter(g => g.conversionKey)
+      .map(g => ({
+        operandA: 0,
+        operandB: 0,
+        operation: 'CONVERT',
+        wrongCount: g._count.id,
+        conversionKey: g.conversionKey as string,
+        conversionLabel: getConversionByKey(g.conversionKey as string)?.label ?? g.conversionKey,
+      }));
+  }
+
+  const groups = await prisma.answer.groupBy({
+    by: ['operandA', 'operandB', 'operation'],
+    where: { userId, isCorrect: false, category: 'MULTIPLICATION' },
+    _count: { id: true },
+    having: { id: { _count: { gte: 2 } } },
+    orderBy: { _count: { id: 'desc' } },
+    take: 10,
+  });
+  return groups.map(g => ({
+    operandA: g.operandA,
+    operandB: g.operandB,
+    operation: g.operation,
+    wrongCount: g._count.id,
+  }));
 }
