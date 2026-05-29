@@ -7,6 +7,8 @@ interface Props {
   resetKey?: number;
   onSubmit: (value: number) => void;
   disabled?: boolean;
+  highlightCorrect?: number;
+  highlightClicked?: number;
 }
 
 function computeCorrect(q: Question): number {
@@ -25,13 +27,12 @@ function generateChoices(correct: number, question: Question): number[] {
   if (question.operation === 'CONVERT') {
     const src = question.operandA;
     const f = question.conversionFactor ?? 1;
-    // Meaningful distractors: wrong direction, magnitude errors, common mistakes
     candidates = [
-      question.conversionMultiply ? Math.round(src / f) : src * f, // odwrotna operacja
-      correct * 10,   // błąd rzędu wielkości ×10
-      correct * 100,  // błąd rzędu wielkości ×100
-      correct * f,    // użyto przelicznika dwa razy
-      Math.round(correct / 10), // błąd rzędu ÷10
+      question.conversionMultiply ? Math.round(src / f) : src * f,
+      correct * 10,
+      correct * 100,
+      correct * f,
+      Math.round(correct / 10),
     ].filter(n => Number.isFinite(n) && Number.isInteger(n) && n > 0 && n !== correct);
   } else {
     const { operandA, operandB } = question;
@@ -49,7 +50,6 @@ function generateChoices(correct: number, question: Question): number[] {
     choices.add(c);
   }
 
-  // Fallback: add random nearby values if not enough candidates
   let safety = 0;
   while (choices.size < 4 && safety++ < 50) {
     const offset = Math.ceil(Math.random() * Math.max(correct, 5));
@@ -60,7 +60,7 @@ function generateChoices(correct: number, question: Question): number[] {
   return [...choices].sort(() => Math.random() - 0.5);
 }
 
-export function ClickChoices({ question, resetKey = 0, onSubmit, disabled }: Props) {
+export function ClickChoices({ question, resetKey = 0, onSubmit, disabled, highlightCorrect, highlightClicked }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const choices = useMemo(() => {
     const correct = computeCorrect(question);
@@ -69,22 +69,30 @@ export function ClickChoices({ question, resetKey = 0, onSubmit, disabled }: Pro
 
   return (
     <div className="grid grid-cols-2 gap-3 w-full">
-      {choices.map(n => (
-        <button
-          key={n}
-          type="button"
-          onClick={() => onSubmit(n)}
-          disabled={disabled}
-          className={cn(
-            'py-5 rounded-2xl font-display text-3xl font-black transition-all border-2',
-            'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100',
-            'hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 active:scale-95',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
-          )}
-        >
-          {n}
-        </button>
-      ))}
+      {choices.map(n => {
+        const isClicked = highlightClicked === n;
+        const isCorrect = highlightCorrect === n;
+        const showFeedback = highlightCorrect !== undefined;
+
+        return (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onSubmit(n)}
+            disabled={disabled}
+            className={cn(
+              'py-5 rounded-2xl font-display text-3xl font-black transition-all border-2 disabled:cursor-not-allowed',
+              !showFeedback && 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 active:scale-95 disabled:opacity-50',
+              showFeedback && isClicked && isCorrect && 'border-green-500 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 scale-105',
+              showFeedback && isClicked && !isCorrect && 'border-red-500 bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400',
+              showFeedback && !isClicked && isCorrect && 'border-green-500 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+              showFeedback && !isClicked && !isCorrect && 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 opacity-40',
+            )}
+          >
+            {n}
+          </button>
+        );
+      })}
     </div>
   );
 }
