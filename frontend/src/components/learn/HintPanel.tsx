@@ -13,9 +13,9 @@ export function HintPanel({ question }: Props) {
     const { fromUnit, toUnit, conversionFactor, operandA } = question;
     if (!fromUnit || !toUnit || !conversionFactor) return null;
 
-    // Build a small conversion table (5 example values)
-    const isMultiply = operandA <= conversionFactor;
-    const exampleValues = [1, 2, 3, 5, 10];
+    const isMultiply = question.conversionMultiply ?? false;
+    // Build example rows: pick 5 representative source values
+    const baseValues = isMultiply ? [1, 2, 3, 5, 10] : [1, 2, 3, 5, 10].map(v => v * conversionFactor);
 
     return (
       <div className="w-full">
@@ -34,13 +34,12 @@ export function HintPanel({ question }: Props) {
               Zamiana {fromUnit} → {toUnit} (1 {toUnit} = {conversionFactor} {fromUnit}):
             </p>
             <div className="flex flex-wrap gap-2">
-              {exampleValues.map(v => {
-                const src = isMultiply ? v : v * conversionFactor;
-                const dst = isMultiply ? v * conversionFactor : v;
+              {baseValues.map(src => {
+                const dst = isMultiply ? src * conversionFactor : src / conversionFactor;
                 const isHighlight = src === operandA;
                 return (
                   <span
-                    key={v}
+                    key={src}
                     className={`px-2 py-1 rounded-lg text-sm font-mono ${
                       isHighlight
                         ? 'bg-blue-600 text-white font-bold'

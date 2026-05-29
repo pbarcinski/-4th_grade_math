@@ -23,16 +23,16 @@ function generateChoices(correct: number, question: Question): number[] {
   let candidates: number[];
 
   if (question.operation === 'CONVERT') {
+    const src = question.operandA;
     const f = question.conversionFactor ?? 1;
-    // Generate plausible wrong answers: ×/÷ by factor variants, neighbors
-    const isDiv = !question.conversionMultiply;
+    // Meaningful distractors: wrong direction, magnitude errors, common mistakes
     candidates = [
-      correct + 1, correct - 1,
-      correct * 10, correct / 10,
-      isDiv ? question.operandA : question.operandA / f / f,
-      correct * f,
-      correct + f, correct - f,
-    ].filter(n => Number.isInteger(n) && n > 0 && n !== correct);
+      question.conversionMultiply ? Math.round(src / f) : src * f, // odwrotna operacja
+      correct * 10,   // błąd rzędu wielkości ×10
+      correct * 100,  // błąd rzędu wielkości ×100
+      correct * f,    // użyto przelicznika dwa razy
+      Math.round(correct / 10), // błąd rzędu ÷10
+    ].filter(n => Number.isFinite(n) && Number.isInteger(n) && n > 0 && n !== correct);
   } else {
     const { operandA, operandB } = question;
     candidates = [
@@ -49,10 +49,13 @@ function generateChoices(correct: number, question: Question): number[] {
     choices.add(c);
   }
 
+  // Fallback: add random nearby values if not enough candidates
   let safety = 0;
   while (choices.size < 4 && safety++ < 50) {
-    const n = correct + Math.ceil(Math.random() * 6) * (Math.random() < 0.5 ? 1 : -1);
-    if (n > 0 && Number.isInteger(n)) choices.add(n);
+    const base = correct > 10 ? correct : 10;
+    const offset = Math.ceil(Math.random() * Math.max(correct, 5));
+    const n = Math.random() < 0.5 ? correct + offset : Math.max(1, correct - offset);
+    if (Number.isInteger(n) && n > 0) choices.add(n);
   }
 
   return [...choices].sort(() => Math.random() - 0.5);
