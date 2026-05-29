@@ -1,14 +1,13 @@
 import { CheckCircle, XCircle } from 'lucide-react';
-import { AnswerResult, Question } from '@/types';
+import { AnswerResult } from '@/types';
 
 interface Props {
   result: AnswerResult;
   operation: string;
   operandA: number;
-  question?: Question;
 }
 
-export function FeedbackBanner({ result, operation, operandA, question }: Props) {
+export function FeedbackBanner({ result, operation, operandA }: Props) {
   if (result.isCorrect) {
     return (
       <div className="animate-bounce-in flex items-center gap-3 px-6 py-4 rounded-2xl bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">

@@ -110,7 +110,7 @@ export function LearnPage() {
 
           {phase === 'feedback' && result && (
             <div className="flex flex-col gap-4">
-              <FeedbackBanner result={result} operation={question.operation} operandA={question.operandA} question={question} />
+              <FeedbackBanner result={result} operation={question.operation} operandA={question.operandA} />
               <Button onClick={loadNext} size="lg" className="w-full">
                 Następne pytanie →
               </Button>
