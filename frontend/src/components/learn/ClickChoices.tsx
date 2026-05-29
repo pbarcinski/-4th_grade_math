@@ -52,7 +52,6 @@ function generateChoices(correct: number, question: Question): number[] {
   // Fallback: add random nearby values if not enough candidates
   let safety = 0;
   while (choices.size < 4 && safety++ < 50) {
-    const base = correct > 10 ? correct : 10;
     const offset = Math.ceil(Math.random() * Math.max(correct, 5));
     const n = Math.random() < 0.5 ? correct + offset : Math.max(1, correct - offset);
     if (Number.isInteger(n) && n > 0) choices.add(n);
